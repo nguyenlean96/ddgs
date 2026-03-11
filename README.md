@@ -5,9 +5,9 @@ A metasearch library that aggregates results from diverse web search services.
 
 
 ## Table of Contents
-* [API Server (with MCP Integration)](#api-server-with-mcp-integration)
 * [Install](#install)
 * [CLI version](#cli-version)
+* [API Server (with MCP Integration)](#api-server-with-mcp-integration)
 * [Engines](#engines)
 * [DDGS class](#ddgs-class)
 * [1. text()](#1-text)
@@ -18,13 +18,38 @@ A metasearch library that aggregates results from diverse web search services.
 * [Disclaimer](#disclaimer)
 
 ___
+## Install
+```python
+pip install -U ddgs      # Base install
+pip install -U ddgs[api] # With API server
+```
+
+## CLI version
+
+```python3
+ddgs --help
+```
+
+[Go To TOP](#TOP)
+___
+
 ## API Server (with MCP Integration)
--  **Docker compose**
+
+- **CLI**
+```bash
+ddgs api    # Start in foreground
+ddgs api -d # Start in detached mode
+ddgs api -s # Stop detached server
+ddgs api --host 127.0.0.1 --port 9000 --proxy socks5h://127.0.0.1:9150  # Custom host / post / proxy
+```
+
+- **Docker compose**
 ```bash
 git clone https://github.com/deedy5/ddgs && cd ddgs
 docker-compose up --build
 ```
--  **Bash**
+
+- **Bash script**
 ```bash
 git clone https://github.com/deedy5/ddgs && cd ddgs
 chmod +x start_api.sh
@@ -33,7 +58,6 @@ chmod +x start_api.sh
 
 #### Available Endpoints
 - MCP Endpoints (for AI assistance):
-    - `http://localhost:8000/mcp` - HTTP transport
     - `http://localhost:8000/sse` - SSE transport
 - API Docs: `http://localhost:8000/docs`
 - Health Check: `http://localhost:8000/health`
@@ -60,19 +84,6 @@ chmod +x start_api.sh
 
 [Go To TOP](#TOP)
 ___
-
-## Install
-```python
-pip install -U ddgs
-```
-
-## CLI version
-
-```python3
-ddgs --help
-```
-
-[Go To TOP](#TOP)
 
 ## Engines
 

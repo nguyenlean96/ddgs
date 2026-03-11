@@ -1,6 +1,8 @@
 """FastAPI application for DDGS API."""
 
+import asyncio
 import logging
+import os
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
@@ -8,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from ddgs import DDGS
+from ddgs.utils import _expand_proxy_tb_alias
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -133,14 +136,16 @@ async def health_check() -> HealthResponse:
 async def search_text(request: TextSearchRequest) -> SearchResponse:
     """Perform a text search."""
     try:
-        results = DDGS().text(
-            query=request.query,
-            region=request.region,
-            safesearch=request.safesearch,
-            timelimit=request.timelimit,
-            max_results=request.max_results,
-            page=request.page,
-            backend=request.backend,
+        results = await asyncio.to_thread(
+            lambda: DDGS(proxy=_expand_proxy_tb_alias(os.environ.get("DDGS_PROXY"))).text(
+                query=request.query,
+                region=request.region,
+                safesearch=request.safesearch,
+                timelimit=request.timelimit,
+                max_results=request.max_results,
+                page=request.page,
+                backend=request.backend,
+            )
         )
 
         return SearchResponse(results=results)
@@ -161,14 +166,16 @@ async def search_text_get(
 ) -> SearchResponse:
     """Perform a text search via GET request."""
     try:
-        results = DDGS().text(
-            query=query,
-            region=region,
-            safesearch=safesearch,
-            timelimit=timelimit,
-            max_results=max_results,
-            page=page,
-            backend=backend,
+        results = await asyncio.to_thread(
+            lambda: DDGS(proxy=_expand_proxy_tb_alias(os.environ.get("DDGS_PROXY"))).text(
+                query=query,
+                region=region,
+                safesearch=safesearch,
+                timelimit=timelimit,
+                max_results=max_results,
+                page=page,
+                backend=backend,
+            )
         )
 
         return SearchResponse(results=results)
@@ -181,19 +188,21 @@ async def search_text_get(
 async def search_images(request: ImagesSearchRequest) -> SearchResponse:
     """Perform an image search."""
     try:
-        results = DDGS().images(
-            query=request.query,
-            region=request.region,
-            safesearch=request.safesearch,
-            timelimit=request.timelimit,
-            max_results=request.max_results,
-            page=request.page,
-            backend=request.backend,
-            size=request.size,
-            color=request.color,
-            type_image=request.type_image,
-            layout=request.layout,
-            license_image=request.license_image,
+        results = await asyncio.to_thread(
+            lambda: DDGS(proxy=_expand_proxy_tb_alias(os.environ.get("DDGS_PROXY"))).images(
+                query=request.query,
+                region=request.region,
+                safesearch=request.safesearch,
+                timelimit=request.timelimit,
+                max_results=request.max_results,
+                page=request.page,
+                backend=request.backend,
+                size=request.size,
+                color=request.color,
+                type_image=request.type_image,
+                layout=request.layout,
+                license_image=request.license_image,
+            )
         )
 
         return SearchResponse(results=results)
@@ -219,19 +228,21 @@ async def search_images_get(
 ) -> SearchResponse:
     """Perform an image search via GET request."""
     try:
-        results = DDGS().images(
-            query=query,
-            region=region,
-            safesearch=safesearch,
-            timelimit=timelimit,
-            max_results=max_results,
-            page=page,
-            backend=backend,
-            size=size,
-            color=color,
-            type_image=type_image,
-            layout=layout,
-            license_image=license_image,
+        results = await asyncio.to_thread(
+            lambda: DDGS(proxy=_expand_proxy_tb_alias(os.environ.get("DDGS_PROXY"))).images(
+                query=query,
+                region=region,
+                safesearch=safesearch,
+                timelimit=timelimit,
+                max_results=max_results,
+                page=page,
+                backend=backend,
+                size=size,
+                color=color,
+                type_image=type_image,
+                layout=layout,
+                license_image=license_image,
+            )
         )
 
         return SearchResponse(results=results)
@@ -244,14 +255,16 @@ async def search_images_get(
 async def search_news(request: NewsSearchRequest) -> SearchResponse:
     """Perform a news search."""
     try:
-        results = DDGS().news(
-            query=request.query,
-            region=request.region,
-            safesearch=request.safesearch,
-            timelimit=request.timelimit,
-            max_results=request.max_results,
-            page=request.page,
-            backend=request.backend,
+        results = await asyncio.to_thread(
+            lambda: DDGS(proxy=_expand_proxy_tb_alias(os.environ.get("DDGS_PROXY"))).news(
+                query=request.query,
+                region=request.region,
+                safesearch=request.safesearch,
+                timelimit=request.timelimit,
+                max_results=request.max_results,
+                page=request.page,
+                backend=request.backend,
+            )
         )
 
         return SearchResponse(results=results)
@@ -272,14 +285,16 @@ async def search_news_get(
 ) -> SearchResponse:
     """Perform a news search via GET request."""
     try:
-        results = DDGS().news(
-            query=query,
-            region=region,
-            safesearch=safesearch,
-            timelimit=timelimit,
-            max_results=max_results,
-            page=page,
-            backend=backend,
+        results = await asyncio.to_thread(
+            lambda: DDGS(proxy=_expand_proxy_tb_alias(os.environ.get("DDGS_PROXY"))).news(
+                query=query,
+                region=region,
+                safesearch=safesearch,
+                timelimit=timelimit,
+                max_results=max_results,
+                page=page,
+                backend=backend,
+            )
         )
 
         return SearchResponse(results=results)
@@ -292,17 +307,19 @@ async def search_news_get(
 async def search_videos(request: VideosSearchRequest) -> SearchResponse:
     """Perform a video search."""
     try:
-        results = DDGS().videos(
-            query=request.query,
-            region=request.region,
-            safesearch=request.safesearch,
-            timelimit=request.timelimit,
-            max_results=request.max_results,
-            page=request.page,
-            backend=request.backend,
-            resolution=request.resolution,
-            duration=request.duration,
-            license_videos=request.license_videos,
+        results = await asyncio.to_thread(
+            lambda: DDGS(proxy=_expand_proxy_tb_alias(os.environ.get("DDGS_PROXY"))).videos(
+                query=request.query,
+                region=request.region,
+                safesearch=request.safesearch,
+                timelimit=request.timelimit,
+                max_results=request.max_results,
+                page=request.page,
+                backend=request.backend,
+                resolution=request.resolution,
+                duration=request.duration,
+                license_videos=request.license_videos,
+            )
         )
 
         return SearchResponse(results=results)
@@ -326,17 +343,19 @@ async def search_videos_get(
 ) -> SearchResponse:
     """Perform a video search via GET request."""
     try:
-        results = DDGS().videos(
-            query=query,
-            region=region,
-            safesearch=safesearch,
-            timelimit=timelimit,
-            max_results=max_results,
-            page=page,
-            backend=backend,
-            resolution=resolution,
-            duration=duration,
-            license_videos=license_videos,
+        results = await asyncio.to_thread(
+            lambda: DDGS(proxy=_expand_proxy_tb_alias(os.environ.get("DDGS_PROXY"))).videos(
+                query=query,
+                region=region,
+                safesearch=safesearch,
+                timelimit=timelimit,
+                max_results=max_results,
+                page=page,
+                backend=backend,
+                resolution=resolution,
+                duration=duration,
+                license_videos=license_videos,
+            )
         )
 
         return SearchResponse(results=results)
@@ -349,11 +368,13 @@ async def search_videos_get(
 async def search_books(request: BooksSearchRequest) -> SearchResponse:
     """Perform a book search."""
     try:
-        results = DDGS().books(
-            query=request.query,
-            max_results=request.max_results,
-            page=request.page,
-            backend=request.backend,
+        results = await asyncio.to_thread(
+            lambda: DDGS(proxy=_expand_proxy_tb_alias(os.environ.get("DDGS_PROXY"))).books(
+                query=request.query,
+                max_results=request.max_results,
+                page=request.page,
+                backend=request.backend,
+            )
         )
 
         return SearchResponse(results=results)
@@ -371,11 +392,13 @@ async def search_books_get(
 ) -> SearchResponse:
     """Perform a book search via GET request."""
     try:
-        results = DDGS().books(
-            query=query,
-            max_results=max_results,
-            page=page,
-            backend=backend,
+        results = await asyncio.to_thread(
+            lambda: DDGS(proxy=_expand_proxy_tb_alias(os.environ.get("DDGS_PROXY"))).books(
+                query=query,
+                max_results=max_results,
+                page=page,
+                backend=backend,
+            )
         )
 
         return SearchResponse(results=results)

@@ -52,7 +52,7 @@ class DDGS:
             type[BaseSearchEngine[Any]], BaseSearchEngine[Any]
         ] = {}  # dict[engine_class, engine_instance]
 
-    def __enter__(self) -> "DDGS":
+    def __enter__(self) -> "DDGS":  # noqa: PYI034
         """Enter the context manager and return the DDGS instance."""
         return self
 
