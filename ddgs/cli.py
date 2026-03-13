@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import unquote
+from typing import Literal
 
 import click
 import primp
@@ -71,27 +72,33 @@ def _save_csv(csvfile: str | Path, data: list[dict[str, str]]) -> None:
             writer.writerows(data)
 
 
-def _print_data(data: list[dict[str, str]], *, no_color: bool = False) -> None:
+def _print_data(data: list[dict[str, str]],
+                *,
+                no_color: bool = False,
+                format: Literal["default", "raw", "pretty-raw"] | None = "default") -> None:
     if data:
-        for i, e in enumerate(data, start=1):
-            click.secho(f"{i}.\t    {'=' * 78}", bg="black", fg="white")
-            for j, (k, v) in enumerate(e.items(), start=1):
-                if v:
-                    width = 300 if k in ("content", "href", "image", "source", "thumbnail", "url") else 78
-                    title = "language" if k == "detected_language" else k
-                    text = click.wrap_text(
-                        f"{v}",
-                        width=width,
-                        initial_indent="",
-                        subsequent_indent=" " * 12,
-                        preserve_paragraphs=True,
-                    )
-                else:
-                    title = k
-                    text = v
-                click.secho(f"{title:<12}{text}", bg="black", fg=COLORS[j] if not no_color else "white", overline=True)
-            if sys.stdin.isatty():  # Only block for input in interactive mode
-                input()
+        if format == "default":
+            for i, e in enumerate(data, start=1):
+                click.secho(f"{i}.\t    {'=' * 78}", bg=None if no_color else "black", fg=None if no_color else "white")
+                for j, (k, v) in enumerate(e.items(), start=1):
+                    if v:
+                        width = 300 if k in ("content", "href", "image", "source", "thumbnail", "url") else 78
+                        title = "language" if k == "detected_language" else k
+                        text = click.wrap_text(
+                            f"{v}",
+                            width=width,
+                            initial_indent="",
+                            subsequent_indent=" " * 12,
+                            preserve_paragraphs=True,
+                        )
+                    else:
+                        title = k
+                        text = v
+                    click.secho(f"{title:<12}{text}", bg=None if no_color else "black", fg=COLORS[j] if not no_color else None, overline=None if no_color else True)
+                if sys.stdin.isatty():  # Only block for input in interactive mode
+                    input()
+        if format == "raw" or format == "pretty-raw":
+            print(json.dumps(data, indent=4 if format == "pretty-raw" else None))
 
 
 def _sanitize_query(query: str) -> str:
@@ -212,6 +219,19 @@ def version() -> str:
 @click.option("-pr", "--proxy", help="the proxy to send requests, example: socks5h://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 @click.option("-nc", "--no-color", is_flag=True, default=False, help="disable color output")
+@click.option(
+    "-f",
+    "--format",
+    default="default",
+    type=click.Choice(
+        [
+            "default",
+            "raw",
+            "pretty-raw",
+        ]
+    ),
+    multiple=False,
+)
 def text(
     query: str,
     keywords: str | None,  # deprecated
@@ -229,6 +249,7 @@ def text(
     download: bool,
     verify: bool,
     no_color: bool,
+    format: Literal["default", "raw", "pretty-raw"],
 ) -> None:
     """CLI function to perform a DDGS text metasearch."""
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).text(
@@ -255,7 +276,7 @@ def text(
             pathname=download_directory,
         )
     if not output and not download:
-        _print_data(data, no_color=no_color)
+        _print_data(data, no_color=no_color, format=format)
 
 
 @cli.command()
