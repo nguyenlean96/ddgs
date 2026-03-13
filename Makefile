@@ -1,7 +1,7 @@
 PY := .venv/bin/python
 PIP := .venv/bin/pip
 
-.PHONY: help setup lint format test all clean
+.PHONY: help setup lint format test all clean build exe
 
 help:
 	@echo "Targets:"
@@ -10,6 +10,8 @@ help:
 	@echo "  format  - run ruff format and ruff check --fix"
 	@echo "  test    - run pytest"
 	@echo "  all     - run setup, lint, format and test"
+	@echo "  build   - build executable with PyInstaller"
+	@echo "  exe     - alias for build"
 	@echo "  clean   - remove cache, venv and build artifacts"
 
 setup:
@@ -27,6 +29,9 @@ test:
 	$(PY) -m pytest
 
 all: setup lint format test
+
+build exe:
+	$(PY) -m PyInstaller ddgs.spec --clean
 
 clean:
 	rm -rf .venv/
