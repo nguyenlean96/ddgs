@@ -52,6 +52,7 @@ dev = [
     "prek",
     "pytest>=8.4.1",
     "ruff>=0.13.0",
+    "pyinstaller>=6.11.0",
 
     # for mypy
     "lxml-stubs",
