@@ -223,13 +223,7 @@ def version() -> str:
     "-f",
     "--format",
     default="default",
-    type=click.Choice(
-        [
-            "default",
-            "raw",
-            "pretty-raw",
-        ]
-    ),
+    type=click.Choice(["default", "raw", "pretty-raw"]),
     multiple=False,
 )
 def text(
@@ -332,6 +326,13 @@ def text(
 @click.option("-pr", "--proxy", help="the proxy to send requests, example: socks5h://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 @click.option("-nc", "--no-color", is_flag=True, default=False, help="disable color output")
+@click.option(
+    "-f",
+    "--format",
+    default="default",
+    type=click.Choice(["default", "raw", "pretty-raw"]),
+    multiple=False,
+)
 def images(
     query: str,
     keywords: str | None,  # deprecated
@@ -354,6 +355,7 @@ def images(
     download: bool,
     verify: bool,
     no_color: bool,
+    format: Literal["default", "raw", "pretty-raw"],
 ) -> None:
     """CLI function to perform a DDGS images metasearch."""
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).images(
@@ -385,7 +387,7 @@ def images(
             pathname=download_directory,
         )
     if not output and not download:
-        _print_data(data, no_color=no_color)
+        _print_data(data, no_color=no_color, format=format)
 
 
 @cli.command()
@@ -411,6 +413,13 @@ def images(
 @click.option("-pr", "--proxy", help="the proxy to send requests, example: socks5h://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 @click.option("-nc", "--no-color", is_flag=True, default=False, help="disable color output")
+@click.option(
+    "-f",
+    "--format",
+    default="default",
+    type=click.Choice(["default", "raw", "pretty-raw"]),
+    multiple=False,
+)
 def videos(
     query: str,
     keywords: str | None,  # deprecated
@@ -428,6 +437,7 @@ def videos(
     *,
     verify: bool,
     no_color: bool,
+    format: Literal["default", "raw", "pretty-raw"],
 ) -> None:
     """CLI function to perform a DDGS videos metasearch."""
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).videos(
@@ -447,7 +457,7 @@ def videos(
     if output:
         _save_data(query, data, function_name="videos", filename=output)
     else:
-        _print_data(data, no_color=no_color)
+        _print_data(data, no_color=no_color, format=format)
 
 
 @cli.command()
@@ -470,6 +480,13 @@ def videos(
 @click.option("-pr", "--proxy", help="the proxy to send requests, example: socks5h://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 @click.option("-nc", "--no-color", is_flag=True, default=False, help="disable color output")
+@click.option(
+    "-f",
+    "--format",
+    default="default",
+    type=click.Choice(["default", "raw", "pretty-raw"]),
+    multiple=False,
+)
 def news(
     query: str,
     keywords: str | None,  # deprecated
@@ -484,6 +501,7 @@ def news(
     *,
     verify: bool,
     no_color: bool,
+    format: Literal["default", "raw", "pretty-raw"],
 ) -> None:
     """CLI function to perform a DDGS news metasearch."""
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).news(
@@ -500,7 +518,7 @@ def news(
     if output:
         _save_data(query, data, function_name="news", filename=output)
     else:
-        _print_data(data, no_color=no_color)
+        _print_data(data, no_color=no_color, format=format)
 
 
 @cli.command()
@@ -520,6 +538,13 @@ def news(
 @click.option("-pr", "--proxy", help="the proxy to send requests, example: socks5h://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 @click.option("-nc", "--no-color", is_flag=True, default=False, help="disable color output")
+@click.option(
+    "-f",
+    "--format",
+    default="default",
+    type=click.Choice(["default", "raw", "pretty-raw"]),
+    multiple=False,
+)
 def books(
     query: str,
     keywords: str | None,  # deprecated
@@ -531,6 +556,7 @@ def books(
     *,
     verify: bool,
     no_color: bool,
+    format: Literal["default", "raw", "pretty-raw"],
 ) -> None:
     """CLI function to perform a DDGS books metasearch."""
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).books(
@@ -543,7 +569,7 @@ def books(
     if output:
         _save_data(query, data, function_name="books", filename=output)
     else:
-        _print_data(data, no_color=no_color)
+        _print_data(data, no_color=no_color, format=format)
 
 
 @cli.command()
