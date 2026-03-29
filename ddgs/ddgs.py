@@ -168,7 +168,7 @@ class DDGS:
 
         # Perform search
         results_aggregator: ResultsAggregator[set[str]] = ResultsAggregator({"href", "image", "url", "embed_url"})
-        max_workers = min(len_unique_providers, max(5, ceil((max_results or 10) / 10) + 1)) if max_results else len_unique_providers
+        max_workers = len_unique_providers  # Dispatch to all enabled engines concurrently
         executor = self.get_executor()
         futures, err = {}, None
         engines_iter = iter(engines)
