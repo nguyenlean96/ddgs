@@ -592,6 +592,12 @@ def api(detach: bool, stop: bool, host: str, port: int, reload: bool, proxy: str
         ddgs api --host 127.0.0.1 --port 9000  # Bind to specific host/port
         ddgs api -pr socks5h://127.0.0.1:9150  # Use proxy
 
+    Note:
+        Detached mode (-d) is not supported when running from a PyInstaller bundle
+        (e.g., `ddgs` from pipx or standalone installer). For production deployments,
+        use Docker: docker-compose up -d, or install via pip: pip install ddgs[api]
+        and run with systemd/Windows Service.
+
     """
     # Ensure PID file directory exists
     _PID_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -626,6 +632,18 @@ def api(detach: bool, stop: bool, host: str, port: int, reload: bool, proxy: str
         proxy_env["DDGS_PROXY"] = _expand_proxy_tb_alias(proxy) or proxy
 
     if detach:
+        # Check if running from PyInstaller bundle
+        is_frozen = getattr(sys, 'frozen', False)
+        if is_frozen:
+            click.echo(
+                "Error: Detached mode is not supported in PyInstaller bundles.\n"
+                "For production, use Docker: docker-compose up -d\n"
+                "Or install via pip: pip install 'ddgs[api]' and manage with \n" \
+                "systemd/Windows Service",
+                err=True,
+            )
+            return
+
         import time  # noqa: PLC0415
 
         cmd = [
@@ -638,17 +656,26 @@ def api(detach: bool, stop: bool, host: str, port: int, reload: bool, proxy: str
             "--port",
             str(port),
         ]
+        
+        # Capture stderr to provide more detailed error information
         process = subprocess.Popen(  # noqa: S603
             cmd,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             env=proxy_env,
         )
 
         # Wait briefly and verify process started successfully
-        time.sleep(0.5)
+        time.sleep(1)  # Increase wait time to capture any startup errors
         if process.poll() is not None:
-            click.echo(f"Failed to start server: process exited with code {process.returncode}", err=True)
+            # Get the stderr output for more detailed error information
+            _, stderr = process.communicate()
+            error_msg = stderr.decode() if stderr else f"process exited with code {process.returncode}"
+            click.echo(f"Failed to start server: {error_msg}", err=True)
+            
+            # Additional debugging information
+            click.echo(f"Command executed: {' '.join(cmd)}", err=True)
+            click.echo(f"Python executable: {sys.executable}", err=True)
             return
 
         _PID_FILE.write_text(str(process.pid))
