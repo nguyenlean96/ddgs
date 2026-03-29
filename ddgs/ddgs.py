@@ -2,7 +2,7 @@
 
 import logging
 import os
-from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait  # FIRST_COMPLETED for non-blocking wait
 from math import ceil
 from random import random, shuffle
 from types import TracebackType
@@ -167,6 +167,10 @@ class DDGS:
         seen_providers: set[str] = set()
 
         # Perform search
+        # Performance optimizations applied:
+        # 1. Use FIRST_COMPLETED to return immediately when any engine finishes (not waiting for slowest)
+        # 2. Submit ALL engines at once and use dynamic replenishment when slots free up
+        # 3. Cancel remaining futures when we already have enough results (early exit)
         results_aggregator: ResultsAggregator[set[str]] = ResultsAggregator({"href", "image", "url", "embed_url"})
         max_workers = len_unique_providers  # Dispatch to all enabled engines concurrently
         executor = self.get_executor()
@@ -174,6 +178,11 @@ class DDGS:
         engines_iter = iter(engines)
 
         def submit_next() -> bool:
+            """Submit the next available engine to the thread pool.
+            
+            Skips engines whose provider has already returned results (deduping).
+            Returns True if a new engine was submitted, False if no more engines available.
+            """
             for engine in engines_iter:
                 if engine.provider in seen_providers:
                     continue
@@ -190,12 +199,17 @@ class DDGS:
                 return True
             return False
 
+        # Initially fill the thread pool with max_workers number of tasks
         for _ in range(max_workers):
             submit_next()
 
+        # Main event loop: process engines as they complete
+        # Key difference from original: use FIRST_COMPLETED to avoid blocking on slowest engine
         while futures:
-            done, not_done = wait(futures, timeout=self._timeout, return_when=FIRST_COMPLETED)
+            # Wait for at least ONE future to complete (not ALL like before with FIRST_EXCEPTION)
+            done, _not_done = wait(futures, timeout=self._timeout, return_when=FIRST_COMPLETED)
             
+            # Process all completed futures
             for f in done:
                 f_engine = futures.pop(f)
                 try:
@@ -204,18 +218,23 @@ class DDGS:
                         seen_providers.add(f_engine.provider)
                 except Exception as ex:  # noqa: BLE001
                     err = ex
+                    # Use f_engine.name instead of engine.name (was always referencing last loop item)
                     logger.info("Error in engine %s: %r", f_engine.name, ex)
             
+            # Early exit: if we have enough results, stop waiting for remaining engines
             if max_results and len(results_aggregator) >= max_results:
                 break
                 
+            # Timeout or no more work to do
             if not done:
                 break
                 
+            # Dynamically replenish: submit more engines as slots become available
             while len(futures) < max_workers:
                 if not submit_next():
                     break
 
+        # Clean up: cancel any pending futures that are no longer needed
         for f in futures:
             f.cancel()
 
