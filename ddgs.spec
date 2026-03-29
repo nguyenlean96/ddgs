@@ -1,11 +1,42 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-block_cipher = None
+from PyInstaller.utils.hooks import collect_all, collect_submodules
 
-a = Analysis(
-    ['bootstrap.py'],
-    pathex=['.'],
-    hiddenimports=[
+# Collect all data and submodules for API dependencies
+# This ensures all package files are properly bundled
+datas_uvicorn, binaries_uvicorn, hiddenimports_uvicorn = collect_all('uvicorn')
+datas_fastapi, binaries_fastapi, hiddenimports_fastapi = collect_all('fastapi')
+datas_starlette, binaries_starlette, hiddenimports_starlette = collect_all('starlette')
+datas_pydantic, binaries_pydantic, hiddenimports_pydantic = collect_all('pydantic')
+
+# For mcp, we exclude the cli module which requires typer (only needed for MCP CLI, not the server)
+# Use collect_submodules with a filter to exclude mcp.cli
+hiddenimports_mcp = collect_submodules('mcp', filter=lambda name: 'cli' not in name)
+datas_mcp = []
+binaries_mcp = []
+datas_httpcore, binaries_httpcore, hiddenimports_httpcore = collect_all('httpcore')
+datas_httpx, binaries_httpx, hiddenimports_httpx = collect_all('httpx')
+datas_anyio, binaries_anyio, hiddenimports_anyio = collect_all('anyio')
+datas_httptools, binaries_httptools, hiddenimports_httptools = collect_all('httptools')
+datas_h11, binaries_h11, hiddenimports_h11 = collect_all('h11')
+
+# Combine all collected data
+datas = datas_uvicorn + datas_fastapi + datas_starlette + datas_pydantic + datas_mcp + datas_httpcore + datas_httpx + datas_anyio + datas_httptools + datas_h11
+binaries = binaries_uvicorn + binaries_fastapi + binaries_starlette + binaries_pydantic + binaries_mcp + binaries_httpcore + binaries_httpx + binaries_anyio + binaries_httptools + binaries_h11
+
+# Combine all hidden imports
+hiddenimports = (
+    hiddenimports_uvicorn +
+    hiddenimports_fastapi +
+    hiddenimports_starlette +
+    hiddenimports_pydantic +
+    hiddenimports_mcp +
+    hiddenimports_httpcore +
+    hiddenimports_httpx +
+    hiddenimports_anyio +
+    hiddenimports_httptools +
+    hiddenimports_h11 +
+    [
         'ddgs',
         'ddgs.cli',
         'ddgs.ddgs',
@@ -31,9 +62,21 @@ a = Analysis(
         'ddgs.engines.yandex',
         'ddgs.engines.annasarchive',
         'ddgs.engines.grokipedia',
-    ],
-    binaries=[],
-    datas=[],
+        # API server modules
+        'ddgs.api_server',
+        'ddgs.api_server.api',
+        'ddgs.api_server.mcp',
+    ]
+)
+
+block_cipher = None
+
+a = Analysis(
+    ['bootstrap.py'],
+    pathex=['.'],
+    hiddenimports=hiddenimports,
+    binaries=binaries,
+    datas=datas,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
