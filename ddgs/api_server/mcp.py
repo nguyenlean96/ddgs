@@ -6,14 +6,22 @@ import os
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 from ddgs import DDGS
 from ddgs.utils import _expand_proxy_tb_alias
 
 logger = logging.getLogger(__name__)
 
-# Create MCP server with secure defaults
-mcp = FastMCP("ddgs-search")
+# Create MCP server with transport security disabled for easier access
+# (DNS rebinding protection blocks requests from different origins)
+transport_security = TransportSecuritySettings(
+    enable_dns_rebinding_protection=False,
+    allowed_hosts=["*"],
+    allowed_origins=["*"],
+)
+
+mcp = FastMCP("ddgs-search", transport_security=transport_security)
 
 
 @mcp.tool()
