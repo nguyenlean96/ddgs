@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
@@ -219,6 +220,7 @@ def version() -> str:
 @click.option("-pr", "--proxy", help="the proxy to send requests, example: socks5h://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 @click.option("-nc", "--no-color", is_flag=True, default=False, help="disable color output")
+@click.option("-T", "--timing", is_flag=True, default=False, help="measure execution time")
 @click.option(
     "-f",
     "--format",
@@ -243,9 +245,11 @@ def text(
     download: bool,
     verify: bool,
     no_color: bool,
+    timing: bool,
     format: Literal["default", "raw", "pretty-raw"],
 ) -> None:
     """CLI function to perform a DDGS text metasearch."""
+    start_time = time.perf_counter() if timing else None
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).text(
         query=query,
         keywords=keywords,  # deprecated
@@ -271,6 +275,9 @@ def text(
         )
     if not output and not download:
         _print_data(data, no_color=no_color, format=format)
+    if timing and start_time is not None:
+        elapsed = time.perf_counter() - start_time
+        click.echo(f"\n⏱  Time: {elapsed:.3f}s")
 
 
 @cli.command()
@@ -326,6 +333,7 @@ def text(
 @click.option("-pr", "--proxy", help="the proxy to send requests, example: socks5h://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 @click.option("-nc", "--no-color", is_flag=True, default=False, help="disable color output")
+@click.option("-T", "--timing", is_flag=True, default=False, help="measure execution time")
 @click.option(
     "-f",
     "--format",
@@ -355,9 +363,11 @@ def images(
     download: bool,
     verify: bool,
     no_color: bool,
+    timing: bool,
     format: Literal["default", "raw", "pretty-raw"],
 ) -> None:
     """CLI function to perform a DDGS images metasearch."""
+    start_time = time.perf_counter() if timing else None
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).images(
         query=query,
         keywords=keywords,  # deprecated
@@ -388,6 +398,9 @@ def images(
         )
     if not output and not download:
         _print_data(data, no_color=no_color, format=format)
+    if time and start_time is not None:
+        elapsed = time.perf_counter() - start_time
+        click.echo(f"\n⏱  Time: {elapsed:.3f}s")
 
 
 @cli.command()
@@ -413,6 +426,7 @@ def images(
 @click.option("-pr", "--proxy", help="the proxy to send requests, example: socks5h://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 @click.option("-nc", "--no-color", is_flag=True, default=False, help="disable color output")
+@click.option("-T", "--timing", is_flag=True, default=False, help="measure execution time")
 @click.option(
     "-f",
     "--format",
@@ -437,9 +451,11 @@ def videos(
     *,
     verify: bool,
     no_color: bool,
+    timing: bool,
     format: Literal["default", "raw", "pretty-raw"],
 ) -> None:
     """CLI function to perform a DDGS videos metasearch."""
+    start_time = time.perf_counter() if timing else None
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).videos(
         query=query,
         keywords=keywords,  # deprecated
@@ -458,6 +474,9 @@ def videos(
         _save_data(query, data, function_name="videos", filename=output)
     else:
         _print_data(data, no_color=no_color, format=format)
+    if timing and start_time is not None:
+        elapsed = time.perf_counter() - start_time
+        click.echo(f"\n⏱  Time: {elapsed:.3f}s")
 
 
 @cli.command()
@@ -480,6 +499,7 @@ def videos(
 @click.option("-pr", "--proxy", help="the proxy to send requests, example: socks5h://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 @click.option("-nc", "--no-color", is_flag=True, default=False, help="disable color output")
+@click.option("-T", "--timing", is_flag=True, default=False, help="measure execution time")
 @click.option(
     "-f",
     "--format",
@@ -501,9 +521,11 @@ def news(
     *,
     verify: bool,
     no_color: bool,
+    timing: bool,
     format: Literal["default", "raw", "pretty-raw"],
 ) -> None:
     """CLI function to perform a DDGS news metasearch."""
+    start_time = time.perf_counter() if timing else None
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).news(
         query=query,
         keywords=keywords,  # deprecated
@@ -519,6 +541,9 @@ def news(
         _save_data(query, data, function_name="news", filename=output)
     else:
         _print_data(data, no_color=no_color, format=format)
+    if timing and start_time is not None:
+        elapsed = time.perf_counter() - start_time
+        click.echo(f"\n⏱  Time: {elapsed:.3f}s")
 
 
 @cli.command()
@@ -538,6 +563,7 @@ def news(
 @click.option("-pr", "--proxy", help="the proxy to send requests, example: socks5h://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 @click.option("-nc", "--no-color", is_flag=True, default=False, help="disable color output")
+@click.option("-T", "--timing", is_flag=True, default=False, help="measure execution time")
 @click.option(
     "-f",
     "--format",
@@ -556,9 +582,11 @@ def books(
     *,
     verify: bool,
     no_color: bool,
+    timing: bool,
     format: Literal["default", "raw", "pretty-raw"],
 ) -> None:
     """CLI function to perform a DDGS books metasearch."""
+    start_time = time.perf_counter() if timing else None
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).books(
         query=query,
         keywords=keywords,  # deprecated
@@ -570,6 +598,9 @@ def books(
         _save_data(query, data, function_name="books", filename=output)
     else:
         _print_data(data, no_color=no_color, format=format)
+    if timing and start_time is not None:
+        elapsed = time.perf_counter() - start_time
+        click.echo(f"\n⏱  Time: {elapsed:.3f}s")
 
 
 @cli.command()
